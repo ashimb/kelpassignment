@@ -15,13 +15,13 @@ export class UsersService {
   }
 
   async getReport() {
-    console.log('get report');
-    const [usersAge, count] = await this.usersRepo.findAndCount({
-      order: {
-        age: 'ASC',
-      },
-    });
-    return { usersAge, count };
+    const query = await this.usersRepo
+      .createQueryBuilder('user')
+      .select('user.age, COUNT(user.age)', 'count')
+      .groupBy('user.age')
+      .getRawMany();
+
+    console.log('query', query);
   }
 
   csvToJson() {
@@ -54,6 +54,7 @@ export class UsersService {
     this.saveUserData(resultArr, additionalInfoArr);
   }
 
+  //seggregating other keys in an another object Array
   addToAdditionalInfo(resultArr: any) {
     const addInfoArr: any = [];
     resultArr.forEach((obj: string) => {
@@ -74,6 +75,7 @@ export class UsersService {
     return addInfoArr;
   }
 
+  //Saving data to DB
   saveUserData(userArray: string[], additionalInfo: any) {
     userArray.forEach((element, index) => {
       const userObj = new Users();
